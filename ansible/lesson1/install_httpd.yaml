@@ -1,0 +1,25 @@
+- hosts: nodes
+  tasks:
+  - name: Install httpd
+    yum: pkg=httpd state=latest
+
+  - name: Enable apache
+    service: name=httd enabled=yes
+
+  - name: Check for apache status
+    service_facts:
+  - debug:
+    var: ansible_facts.services.apache2.state
+
+  - name: Add index.html
+    copy:
+      content: "Welcome to my website"
+      dest: /var/www/html/index.html
+  
+  - name: permit traffic in default zone for https service
+    firewalld:
+      port: 
+      - 80
+      - 443
+      permanent: yes
+      state: enabled
