@@ -3,13 +3,8 @@
   - name: Install httpd
     yum: pkg=httpd state=latest
 
-  - name: Enable apache
-    service: name=httd enabled=yes
-
-  - name: Check for apache status
-    service_facts:
-  - debug:
-    var: ansible_facts.services.apache2.state
+  - name:  start apache
+    service: name=httpd state=started
 
   - name: Add index.html
     copy:
@@ -18,8 +13,12 @@
   
   - name: permit traffic in default zone for https service
     firewalld:
-      port: 
-      - 80
-      - 443
+      port: "{{ item }}"
       permanent: yes
       state: enabled
+    loop:
+      - 80/tcp
+      - 443/tcp
+      
+  - name: restart firewalld
+    service: name=firewalld state=restarted
