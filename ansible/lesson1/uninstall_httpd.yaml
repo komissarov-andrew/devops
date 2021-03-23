@@ -1,0 +1,21 @@
+- hosts: nodes
+  tasks:
+  - name: Remove httpd
+    yum: pkg=httpd state=removed
+
+  - name: Remove index.html
+    file:
+      path: /var/www/html/index.html
+      state: absent
+
+  - name: Close ports in firewalld
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      state: disabled
+    loop:
+      - 80/tcp
+      - 443/tcp
+      
+  - name: restart firewalld
+    service: name=firewalld state=restarted

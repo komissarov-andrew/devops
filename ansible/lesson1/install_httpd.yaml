@@ -6,12 +6,18 @@
   - name:  start apache
     service: name=httpd state=started
 
+  - name: Check status of alertmanager service
+    service_facts:
+    register: service_state
+  - debug:
+      var: service_state.ansible_facts.services["httpd.service"].state
+
   - name: Add index.html
     copy:
       content: "Welcome to my website"
       dest: /var/www/html/index.html
   
-  - name: permit traffic in default zone for https service
+  - name: Open ports in firewalld
     firewalld:
       port: "{{ item }}"
       permanent: yes
