@@ -1,7 +1,9 @@
 - hosts: nodes
   tasks:
   - name: Remove httpd
-    yum: pkg=httpd state=removed
+    yum:
+      pkg: httpd
+      state: removed
 
   - name: Remove index.html
     file:
@@ -18,4 +20,6 @@
       - 443/tcp
       
   - name: restart firewalld
-    service: name=firewalld state=restarted
+    service: 
+      name: firewalld
+      state: restarted

@@ -1,12 +1,17 @@
 - hosts: nodes
   tasks:
   - name: Install httpd
-    yum: pkg=httpd state=latest
+    yum: 
+      pkg: httpd 
+      state: latest
 
-  - name:  start apache
-    service: name=httpd state=started
+  - name:  Start apache
+    service: 
+      name: httpd 
+      state: started
+      enabled: yes
 
-  - name: Check status of alertmanager service
+  - name: Check status of httpd
     service_facts:
     register: service_state
   - debug:
@@ -27,4 +32,32 @@
       - 443/tcp
       
   - name: restart firewalld
-    service: name=firewalld state=restarted
+    service: 
+      name: firewalld 
+      state: restarted
+
+  - name: Disable NetworkManager service
+    service: 
+      name: NetworkManager
+      state: stopped
+      enabled: no
+
+  - stat: path=/sys/firmware/efi/efivars/
+    register: grub_efi
+  - debug: var=grub_efi
+  
+  - name: Change GRUB config
+    lineinfile:
+      backup: yes
+      backrefs: yes
+      dest: /etc/default/grub
+      regexp: '^GRUB_CMDLINE_LINUX="(.*)$'
+      line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 \1 '
+  
+  - name: grub2-mkconfig EFI
+    command: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+    when: grub_efi.stat.exists == True
+
+  - name: grub2-mkconfig MBR
+    command: grub2-mkconfig -o /boot/grub2/grub.cfg
+    when: grub_efi.stat.exists == False
