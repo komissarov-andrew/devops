@@ -40,8 +40,7 @@
     service: 
       name: NetworkManager
       state: stopped
-      enabled: no
-
+      
   - stat: path=/sys/firmware/efi/efivars/
     register: grub_efi
   - debug: var=grub_efi
@@ -51,8 +50,9 @@
       backup: yes
       backrefs: yes
       dest: /etc/default/grub
-      regexp: '^GRUB_CMDLINE_LINUX="(.*)$'
-      line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 \1 '
+      regexp: '^(GRUB_CMDLINE_LINUX=(?!.* net.ifnames=0 biosdevname=0)\"[^\"]+)(\".*)'
+      line: '\1 net.ifnames=0 biosdevname=0\2'
+
   
   - name: grub2-mkconfig EFI
     command: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg

@@ -1,0 +1,37 @@
+---
+# tasks file for install_httpd
+- name: Install httpd
+    yum: 
+      pkg: httpd 
+      state: latest
+
+- name:  Start apache
+  service: 
+    name: httpd 
+    state: started
+    enabled: yes
+
+- name: Check status of httpd
+  service_facts:
+  register: service_state
+- debug:
+    var: service_state.ansible_facts.services["httpd.service"].state
+
+- name: Add index.html
+  copy:
+    content: "Welcome to my website"
+    dest: {{ dest_folder }}/index.html
+
+- name: Open ports in firewalld
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - 80/tcp
+    - 443/tcp
+    
+- name: restart firewalld
+  service: 
+    name: firewalld 
+    state: restarted

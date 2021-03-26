@@ -1,0 +1,66 @@
+- hosts: node1.example.com
+  vars_files: 
+    vars.yaml
+  
+  tasks:
+  - name: Install vsftpd
+    yum: 
+      name: vsftpd 
+      state: latest
+  
+  - name:  Start service
+    service: 
+      name: vsftpd 
+      state: started
+      enabled: yes
+
+  - name: Open ports in firewalld
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      state: enabled
+    loop:
+      - 20/tcp
+      - 21/tcp
+
+  - name: restart firewalld
+    service: 
+      name: firewalld 
+      state: restarted
+
+  - name: FTP folder permissions
+    file:
+      path: /var/ftp/pub
+      owner: "ftp"
+      group: "ftp"
+      mode: 0755
+
+  - name: Template to copy vsftpd.conf
+    template:
+      src: vsftpd.j2
+      dest: /etc/vsftpd/vsftpd.conf
+
+  - name: Install SELinux requirements
+    yum:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - python3-libselinux
+      - policycoreutils-python-utils
+  
+  - name: Change SElinux context
+    seboolean:
+      name: ftpd_anon_write
+      state: yes
+      persistent: yes
+
+  - name: SELinux ftp_homedir
+    seboolean:
+      name: tftp_home_dir
+      state: yes
+      persistent: yes 
+
+  - name: Restart vsftpd
+    service: 
+      name: vsftpd 
+      state: restarted
