@@ -18,11 +18,8 @@
       service: ftp
       permanent: yes
       state: enabled
-
-  - name: restart firewalld
-    service: 
-      name: firewalld 
-      state: restarted
+    notify:
+      - Restart firewalld
 
   - name: FTP folder permissions
     file:
@@ -35,11 +32,8 @@
     template:
       src: vsftpd.j2
       dest: /etc/vsftpd/vsftpd.conf
-
-  - name: Restart vsftpd
-    service: 
-      name: vsftpd 
-      state: restarted
+    notify:
+      - Restart vsftpd
 
   - name: Install SELinux requirements
     yum:
@@ -59,6 +53,20 @@
       target: /var/ftp/pub
       setype: public_content_rw_t
       state: present
+    notify:
+      - Change SELinux context
 
-  - name: Apply new SELinux file context to filesystem
+
+  handlers:
+  - name: Restart vsftpd
+    service: 
+      name: vsftpd 
+      state: restarted
+
+  - name: Restart firewalld
+    service: 
+      name: firewalld 
+      state: restarted
+
+  - name: Change SELinux context
     command: restorecon -irv /var/ftp/pub
