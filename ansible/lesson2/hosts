@@ -1,3 +1,6 @@
 [nodes]
 node1.example.com
 node2.example.com
+
+[ubuntu]
+node3.example.com

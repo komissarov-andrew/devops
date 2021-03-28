@@ -1,37 +1,76 @@
 ---
 # tasks file for install_httpd
-- name: Install httpd
+- block:  # REDHAT family
+  - name: Install httpd
     yum: 
       pkg: httpd 
       state: latest
 
-- name:  Start apache
-  service: 
-    name: httpd 
-    state: started
-    enabled: yes
+  - name:  Start apache
+    service: 
+      name: httpd 
+      state: started
+      enabled: yes
 
-- name: Check status of httpd
-  service_facts:
-  register: service_state
-- debug:
-    var: service_state.ansible_facts.services["httpd.service"].state
-
-- name: Add index.html
-  copy:
-    content: "Welcome to my website"
-    dest: {{ dest_folder }}/index.html
-
-- name: Open ports in firewalld
-  firewalld:
-    port: "{{ item }}"
-    permanent: yes
-    state: enabled
-  loop:
-    - 80/tcp
-    - 443/tcp
+  - name: Check status of httpd
+    service_facts:
+    register: service_state
+  - debug:
+      var: service_state.ansible_facts.services["httpd.service"].state
     
-- name: restart firewalld
-  service: 
-    name: firewalld 
-    state: restarted
+  - name: configure_firewalld
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      state: enabled
+    loop:
+      - 80/tcp
+      - 443/tcp
+    notify: 
+      - restart_firewalld
+  when: ansible_os_family == "RedHat"
+
+- block:  # Debian family
+  - name: Install apache2
+    apt: 
+      name: apache2
+      state: latest
+
+  - name:  Start apache
+    service: 
+      name: apache2
+      state: started
+      enabled: yes
+
+  - name: Check status of apache2
+    service_facts:
+    register: service_state
+  - debug:
+      var: service_state.ansible_facts.services["apache2.service"].state
+  
+  
+  - name: configure_ufw
+    ufw:
+      rule: allow
+      port: "{{ item }}"
+      proto: tcp
+    loop:
+      - '80'
+      - '443'
+    notify:
+      - restart_ufw
+  when: ansible_os_family == "Debian"
+
+- name: Add picture for own site
+  copy:
+    src: ansible.png
+    dest: "{{ dest_folder }}"
+
+- name: Generate index.html
+  template:
+    src:  index.j2
+    dest: "{{ dest_folder }}/index.html"
+    mode: 0755
+  notify:
+    - restart_httpd
+    - restart_apache2

@@ -1,0 +1,23 @@
+<HTML>
+
+    <HEAD>
+    
+    <TITLE>Welcome to example site!</TITLE>
+    
+    </HEAD>
+    
+    <BODY BGCOLOR="FFFFFF">
+    
+    <CENTER><IMG SRC="ansible.png" ALIGN="BOTTOM"> </CENTER>
+    
+    <HR>
+    
+    Server hostname: {{ ansible_hostname }}<br>
+    Server OS Family: {{ ansible_os_family }}<br>
+    IP address: {{ ansible_default_ipv4.address }}
+    
+    <HR>
+    
+    </BODY>
+    
+</HTML>

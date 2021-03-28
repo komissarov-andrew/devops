@@ -1,0 +1,6 @@
+---
+- name: Install httpd role
+  hosts: all
+
+  roles:
+    - role: install_httpd
