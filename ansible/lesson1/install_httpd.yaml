@@ -53,7 +53,6 @@
       regexp: '^(GRUB_CMDLINE_LINUX=(?!.* net.ifnames=0 biosdevname=0)\"[^\"]+)(\".*)'
       line: '\1 net.ifnames=0 biosdevname=0\2'
 
-  
   - name: grub2-mkconfig EFI
     command: grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
     when: grub_efi.stat.exists == True

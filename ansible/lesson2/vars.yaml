@@ -2,3 +2,4 @@ anonymous_enable: yes
 local_enable: yes
 write_enable: yes
 anon_upload_enable: yes
+anon_mkdir_write_enable: yes

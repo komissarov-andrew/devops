@@ -1,7 +1,6 @@
-- hosts: node1.example.com
-  vars_files: 
-    vars.yaml
-  
+- hosts: nodes
+  vars_files:
+    vars.yaml 
   tasks:
   - name: Install vsftpd
     yum: 
@@ -16,12 +15,9 @@
 
   - name: Open ports in firewalld
     firewalld:
-      port: "{{ item }}"
+      service: ftp
       permanent: yes
       state: enabled
-    loop:
-      - 20/tcp
-      - 21/tcp
 
   - name: restart firewalld
     service: 
@@ -40,6 +36,11 @@
       src: vsftpd.j2
       dest: /etc/vsftpd/vsftpd.conf
 
+  - name: Restart vsftpd
+    service: 
+      name: vsftpd 
+      state: restarted
+
   - name: Install SELinux requirements
     yum:
       name: "{{ item }}"
@@ -48,19 +49,16 @@
       - python3-libselinux
       - policycoreutils-python-utils
   
-  - name: Change SElinux context
+  - name: Change SELinux bool
     seboolean:
       name: ftpd_anon_write
       state: yes
-      persistent: yes
 
-  - name: SELinux ftp_homedir
-    seboolean:
-      name: tftp_home_dir
-      state: yes
-      persistent: yes 
+  - name: Change SElinux context
+    sefcontext:
+      target: /var/ftp/pub
+      setype: public_content_rw_t
+      state: present
 
-  - name: Restart vsftpd
-    service: 
-      name: vsftpd 
-      state: restarted
+  - name: Apply new SELinux file context to filesystem
+    command: restorecon -irv /var/ftp/pub
