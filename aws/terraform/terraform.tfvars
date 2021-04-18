@@ -1,0 +1,6 @@
+aws_region = "eu-west-2"
+aws_key_name = "aws"
+instance_ami = "ami-0fbec3e0504ee1970"
+db_user = "wordpress"
+db_password = "Password12345"
+db_name = "wordpress"
